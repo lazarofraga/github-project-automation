@@ -38,7 +38,7 @@ def init_local_repo():
     subprocess.run(['git', 'remote', 'add', 'origin', f'https://github.com/{github_username}/{project_name}.git'])
     subprocess.run(['git', 'push', '-u', 'origin', 'main'])
 
-# create_github_repo()
+create_github_repo()
 init_local_repo()
 # Check for docker for pre-commit hooks
 p = subprocess.run(['docker', '-v'])
