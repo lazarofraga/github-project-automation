@@ -32,11 +32,14 @@ def configure_git_globally():
 def init_local_repo():
     os.chdir(local_project_path)
     if not os.path.exists(f'{local_project_path}/.git'):
+        print(f"Initializing local git in {local_project_path}")
+        os.chdir(local_project_path)
         subprocess.run(['git', 'init'])
 
 
 def create_gitignore():
     if not os.path.exists(f'{local_project_path}/.gitignore'):
+        print(f"Creating .gitignore in {local_project_path}")
         shutil.copyfile(f'{cwd}/files/.gitignore',
                         f'{local_project_path}/.gitignore')
         os.chdir(local_project_path)
@@ -46,7 +49,8 @@ def create_gitignore():
 def create_readme():
     if not os.path.exists(f'{local_project_path}/README.md'):
         os.chdir(local_project_path)
-        subprocess.run(['echo', '\"# ${PROJECT_NAME}\"', '>>', 'README.md'])
+        with open(f'{local_project_path}/README.md', 'a') as file:
+            file.write(f'# {project_name}')
         subprocess.run(['git', 'add', 'README.md'])
 
 
@@ -63,10 +67,10 @@ def precommit_hooks():
     subprocess.run(['pre-commit', 'install'])
 
 
-def push_to_github(repo):
+def push_to_github(github_username, project_name):
     os.chdir(local_project_path)
-    subprocess.run(['git', 'branch', '-M', 'main'])
     subprocess.run(['git', 'commit', '-m', '\"first commit\"'])
+    subprocess.run(['git', 'branch', '-M', 'main'])
     subprocess.run(['git', 'remote', 'add', 'origin',
                    f'https://github.com/{github_username}/{project_name}.git'])
     subprocess.run(['git', 'push', '-u', 'origin', 'main'])
@@ -79,4 +83,4 @@ if __name__ == "__main__":
     create_readme()
     precommit_hooks()
     repo = create_github_repo()
-    push_to_github(repo)
+    push_to_github(github_username, project_name)
