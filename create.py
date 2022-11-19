@@ -5,6 +5,10 @@ import shutil
 import subprocess
 
 
+def check_for_local(local_project_path):
+    if not os.path.exists(local_project_path):
+        os.makedirs(local_project_path, exist_ok=True)
+
 def create_github_repo(github_access_token, project_name):
     user = Github(github_access_token).get_user()
     repo = user.create_repo(project_name)
@@ -19,6 +23,7 @@ def configure_git_globally(github_username, github_email):
 
 
 def init_local_repo(local_project_path):
+    check_for_local(local_project_path)
     os.chdir(local_project_path)
     if not os.path.exists(f'{local_project_path}/.git'):
         print(f"Initializing local git in {local_project_path}")
@@ -27,6 +32,7 @@ def init_local_repo(local_project_path):
 
 
 def create_gitignore(local_project_path, cwd):
+    check_for_local(local_project_path)
     if not os.path.exists(f'{local_project_path}/.gitignore'):
         print(f"Creating .gitignore in {local_project_path}")
         shutil.copyfile(f'{cwd}/files/.gitignore',
@@ -36,6 +42,7 @@ def create_gitignore(local_project_path, cwd):
 
 
 def create_readme(local_project_path):
+    check_for_local(local_project_path)
     if not os.path.exists(f'{local_project_path}/README.md'):
         os.chdir(local_project_path)
         with open(f'{local_project_path}/README.md', 'a') as file:
@@ -51,17 +58,19 @@ def precommit_hooks(local_project_path, cwd):
     if p.returncode != 0:
         raise Exception(
             'Please install docker and current user to docker group')
+    check_for_local(local_project_path)
     os.chdir(local_project_path)
     subprocess.run(['pre-commit', 'autoupdate'])
     subprocess.run(['pre-commit', 'install'])
 
 
-def push_to_github(github_username, project_name):
+def push_to_github(github_username, project_name, local_project_path):
+    check_for_local(local_project_path)
     os.chdir(local_project_path)
     subprocess.run(['git', 'commit', '-m', '\"first commit\"'])
     subprocess.run(['git', 'branch', '-M', 'main'])
     subprocess.run(['git', 'remote', 'add', 'origin',
-                   f'https://github.com/{github_username}/{project_name}.git'])
+                f'https://github.com/{github_username}/{project_name}.git'])
     subprocess.run(['git', 'push', '-u', 'origin', 'main'])
 
 
@@ -82,4 +91,4 @@ if __name__ == "__main__":
     create_readme(local_project_path)
     precommit_hooks(local_project_path, cwd)
     repo = create_github_repo(github_access_token, project_name)
-    push_to_github(github_username, project_name)
+    push_to_github(github_username, project_name, local_project_path)
